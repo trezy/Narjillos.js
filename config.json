@@ -1,0 +1,28 @@
+{
+  "creature": {},
+  "DNA": {
+    "chromosomeCount": 5,
+    "mutation": {
+      "range": 15,
+      "rate": 0.08
+    }
+  },
+  "ecosystem": {},
+  "egg": {
+    "gestation": {
+      "max": 60000,
+      "min": 1000
+    },
+    "DNA": {
+      "max": 10
+    },
+    "radius": {
+      "max": 10,
+      "min": 2
+    }
+  },
+  "experiment": {},
+  "food": {},
+  "organ": {},
+  "physics": {}
+}

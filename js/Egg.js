@@ -1,15 +1,38 @@
 import config from '../config'
+import Base from './Base'
+import Creature from './Creature'
 import DNA from './DNA'
 
 
 
 
 
-export default class Egg {
+export default class Egg extends Base {
 
   /******************************************************************************\
     Private Methods
   \******************************************************************************/
+
+  _consume () {
+    if (this.energy) {
+      this.energy = this.energy - 1
+
+    } else {
+      this._die()
+    }
+  }
+
+  _die () {
+    if (this.consumption) {
+      clearInterval(this.consumption)
+    }
+
+    if (this.gestation) {
+      clearTimeout(this.gestation)
+    }
+
+    this.emit('death', this)
+  }
 
   _generatePosition (maxX, maxY) {
     return this.position = {
@@ -19,18 +42,8 @@ export default class Egg {
   }
 
   _hatch () {
-    console.log('Hatched', this)
-    let text = document.createSVGElement('text')
-    text.innerHTML = `Hatched! My ID is ${this.id}.`
-    this.group.appendChild(text)
-  }
-
-  _numgen (value, min, max) {
-    max = parseInt(max)
-    min = parseInt(min)
-    value = parseInt(value)
-
-    return (parseInt(value) * 0.001) * (max - min) + min
+    new Creature(this)
+    this.emit('hatch', this)
   }
 
 
@@ -42,25 +55,33 @@ export default class Egg {
   \******************************************************************************/
 
   constructor (maxX, maxY) {
+    super()
+
     this._generatePosition(maxX, maxY)
 
-    this.group = document.createSVGElement('g')
-    this.group.classList.add('egg')
-    this.group.setAttribute('id', this.id)
-    this.group.setAttribute('transform', `translate(${this.position.x},${this.position.y})`)
+    this.ui = {
+      details: document.createSVGElement('title'),
+      group: document.createSVGElement('g'),
+      shape: document.createSVGElement('circle')
+    }
 
-    this.shape = document.createSVGElement('circle')
-    this.shape.setAttribute('fill', 'rgb(' + this.color[0] + ',' + this.color[1] + ',' + this.color[2] + ')')
-    this.shape.setAttribute('r', this.radius)
+    this.ui.group = document.createSVGElement('g')
+    this.ui.group.classList.add('egg')
+    this.ui.group.setAttribute('id', this.id)
+    this.ui.group.setAttribute('transform', `translate(${this.position.x},${this.position.y})`)
 
-    this.details = document.createSVGElement('title')
-    this.details.innerHTML = this.genes.join(', ')
+    this.ui.shape = document.createSVGElement('circle')
+    this.ui.shape.setAttribute('fill', 'rgb(' + this.color[0] + ',' + this.color[1] + ',' + this.color[2] + ')')
+    this.ui.shape.setAttribute('r', this.size)
 
-    this.group.appendChild(this.details)
-    this.group.appendChild(this.shape)
+    this.ui.details = document.createSVGElement('title')
+    this.ui.details.innerHTML = this.genes.join(', ')
 
-    // Begin gestation
+    this.ui.group.appendChild(this.ui.details)
+    this.ui.group.appendChild(this.ui.shape)
+
     this.gestation = setTimeout(this._hatch.bind(this), this.gestationPeriod)
+    this.consumption = setInterval(this._consume.bind(this), this.consumptionRate)
 
     return this
   }
@@ -75,22 +96,24 @@ export default class Egg {
 
   // Proxy `color` from the prime DNA
   get color () {
-    if (!this._color) {
-      Object.defineProperty(this, '_color', {
-        value: this.prime.color
-      })
-    }
+    return this.prime.color
+  }
 
-    return this._color
+  // Proxy `size` from the prime DNA
+  // This may need adjusting
+  get consumptionRate () {
+    return this.size
   }
 
   get dnaMap () {
-    if (!this._dnaMap) {
+    if (!this._dnaMap && this._dnaMap === undefined) {
+      let dnaCount = this._numGen(Math.random() * 100, config.egg.DNA.min, config.egg.DNA.max, true)
+
       Object.defineProperty(this, '_dnaMap', {
         value: []
       })
 
-      for (let i = 0; i < config.egg.DNA.max; i++) {
+      for (let i = 0; i < dnaCount; i++) {
         this._dnaMap.push(new DNA)
       }
     }
@@ -98,21 +121,27 @@ export default class Egg {
     return this._dnaMap
   }
 
-  // Proxy `genes` from the prime DNA
-  get genes () {
-    if (!this._genes) {
-      Object.defineProperty(this, '_genes', {
-        value: this.prime.genes
+  // Proxy `energy` from the prime DNA
+  get energy () {
+    if (!this._energy && this._energy === undefined) {
+      Object.defineProperty(this, '_energy', {
+        value: this.prime.energy,
+        writable: true
       })
     }
 
-    return this._genes
+    return this._energy
+  }
+
+  // Proxy `genes` from the prime DNA
+  get genes () {
+    return this.prime.genes
   }
 
   get gestationPeriod () {
-    if (!this._gestationPeriod) {
+    if (!this._gestationPeriod && this._gestationPeriod === undefined) {
       Object.defineProperty(this, '_gestationPeriod', {
-        value: this._numgen(this.prime.gestationPeriod, config.egg.gestation.min, config.egg.gestation.max)
+        value: this._numGen(this.prime.gestationPeriod, config.egg.gestation.min, config.egg.gestation.max)
       })
     }
 
@@ -120,7 +149,7 @@ export default class Egg {
   }
 
   get id () {
-    if (!this._id) {
+    if (!this._id && this._id === undefined) {
       Object.defineProperty(this, '_id', {
         value: (Date.now() + parseInt(this.genes.join(''))).toString(36)
       })
@@ -130,31 +159,34 @@ export default class Egg {
   }
 
   get position () {
-    if (!this._position) {
-      throw new Error('Must run _generatePosition() before attempting to access position')
+    if (!this._position && this._position === undefined) {
+      throw new Error('_generatePosition() hasn\'t been run yet')
     }
 
     return this._position
   }
 
   get prime () {
-    if (!this._prime) {
+    if (!this._prime && this._prime === undefined) {
+      // Generate a random index to select our prime DNS strand for the egg
+      let primeIndex = (Math.random() * (this.dnaMap.length - 1)).toFixed()
+
       Object.defineProperty(this, '_prime', {
-        value: this.dnaMap[(Math.random() * (this.dnaMap.length - 1)).toFixed()]
+        value: this.dnaMap[primeIndex]
       })
     }
 
     return this._prime
   }
 
-  get radius () {
-    if (!this._radius) {
-      Object.defineProperty(this, '_radius', {
-        value: this._numgen(this.prime.size, config.egg.radius.min, config.egg.radius.max)
+  get size () {
+    if (!this._size && this._size === undefined) {
+      Object.defineProperty(this, '_size', {
+        value: this._numGen(this.prime.size, config.egg.size.min, config.egg.size.max)
       })
     }
 
-    return this._radius
+    return this._size
   }
 
 
@@ -165,24 +197,31 @@ export default class Egg {
     Setters
   \******************************************************************************/
 
+  // Proxy `color` to the prime DNA
   set color (value) {
-    throw new Error('Cannot set color')
+    this.prime.color = value
   }
 
   set dnaMap (value) {
-    throw new Error('Cannot set dnaMap')
+    throw new Error('dnaMap cannot be set')
   }
 
+  // Proxy `energy` to the prime DNA
+  set energy (value) {
+    this._energy = value
+  }
+
+  // Proxy `genes` to the prime DNA
   set genes (value) {
-    throw new Error('Cannot set genes')
+    this.prime.genes = value
   }
 
   set gestationPeriod (value) {
-    throw new Error('Cannot set gestationPeriod')
+    throw new Error('gestationPeriod cannot be set')
   }
 
   set id (value) {
-    throw new Error('Cannot set ID')
+    throw new Error('ID cannot be set')
   }
 
   set position (value) {
@@ -192,11 +231,11 @@ export default class Egg {
   }
 
   set prime (value) {
-    throw new Error('Cannot set prime')
+    throw new Error('prime cannot be set')
   }
 
-  set radius (value) {
-    Object.defineProperty(this, '_radius', {
+  set size (value) {
+    Object.defineProperty(this, '_size', {
       value: value
     })
   }

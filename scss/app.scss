@@ -1,34 +1,6 @@
-* {
-  box-sizing: border-box;
-}
+@import 'root';
 
-html, body {
-  height: 100vh;
-  margin: 0;
-  overflow: hidden;
-  padding: 0;
-  width: 100vw;
-}
+@import 'control-panel';
+@import 'dish';
 
-html {
-  font-size: 10px;
-}
-
-body {
-  font-size: 14px;
-}
-
-#controls {
-  background-color: white;
-  border: 1px solid black;
-  display: block;
-  left: 1rem;
-  padding: 1rem;
-  position: absolute;
-  top: 1rem;
-  z-index: 1;
-}
-
-#dish {
-  transform: translateZ(0);
-}
+@import 'helpers.scss';

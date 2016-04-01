@@ -45,16 +45,14 @@ export default class Dish extends Base {
     let maxY = this.ui.dish.scrollHeight
 
     let egg = new Egg(maxX, maxY)
-//    egg.on('death', (egg) => {
-//      console.log('Dead:', egg.id)
-//    })
-//    egg.on('hatch', (egg) => {
-//      console.log('Hatched:', egg.id)
-//    })
-    console.log(egg)
+    egg.on('death', (egg) => {
+      egg.ui.group.classList.add('hide')
+    })
+    egg.on('hatch', (egg) => {
+      egg.ui.group.classList.add('hide')
+    })
 
     this.eggs.push(egg)
-
     this._renderEgg(egg)
   }
 

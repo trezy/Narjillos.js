@@ -11,6 +11,11 @@ export default class Creature extends Base {
     Private Methods
   \******************************************************************************/
 
+  _generatePhenotype () {
+    this.ui.mouth
+    console.log(this.dnaMap.length)
+  }
+
 
 
 
@@ -22,7 +27,10 @@ export default class Creature extends Base {
   constructor (egg) {
     super()
 
+    this.birthDate = new Date
     this.egg = egg
+
+    this._generatePhenotype()
   }
 
 
@@ -34,12 +42,12 @@ export default class Creature extends Base {
   \******************************************************************************/
 
   // Proxy `dnaMap` from the egg
-  get dnaMap () {
-    return this._egg.dnaMap
-  }
-
   get egg () {
     return this._egg
+  }
+
+  get dnaMap () {
+    return this._egg.dnaMap
   }
 
 
@@ -51,6 +59,10 @@ export default class Creature extends Base {
   \******************************************************************************/
 
   // Proxy `dnaMap` to the egg
+  set dnaMap (value) {
+    this._egg.dnaMap = value
+  }
+
   set egg (value) {
     if (!this._egg) {
       Object.defineProperty(this, '_egg', {
@@ -59,9 +71,5 @@ export default class Creature extends Base {
     } else {
       throw new Error('egg may only be set once')
     }
-  }
-
-  set dnaMap (value) {
-    this._egg.dnaMap = value
   }
 }

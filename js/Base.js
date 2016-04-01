@@ -50,6 +50,16 @@ export default class Base extends EventEmitter {
     Getters
   \******************************************************************************/
 
+  get ui () {
+    if (!this._ui && this._ui !== undefined) {
+      Object.defineProperty(this, '_ui', {
+        value: {}
+      })
+    }
+
+    return this._ui
+  }
+
 
 
 
@@ -57,4 +67,24 @@ export default class Base extends EventEmitter {
   /******************************************************************************\
     Setters
   \******************************************************************************/
+
+  set ui (value) {
+    if (typeof value === 'object') {
+      let keys = Object.keys(value)
+
+      for (let i = 0; i < keys.length; i++) {
+        let isHTMLElement = value[keys[i]] instanceof HTMLElement
+        let isSVGElement = value[keys[i]] instanceof SVGElement
+
+
+        if (!isHTMLElement && !isSVGElement) {
+          throw new Error('all elements in ui must be DOM nodes')
+        }
+      }
+
+      this._ui = value
+    } else {
+      throw new Error('ui must be an hash of DOM nodes')
+    }
+  }
 }

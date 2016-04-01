@@ -14,6 +14,8 @@ export default class Egg extends Base {
   \******************************************************************************/
 
   _consume () {
+    this.emit('consume')
+
     if (this.energy) {
       this.energy = this.energy - 1
 
@@ -22,7 +24,7 @@ export default class Egg extends Base {
     }
   }
 
-  _die () {
+  _destroy () {
     if (this.consumption) {
       clearInterval(this.consumption)
     }
@@ -30,8 +32,12 @@ export default class Egg extends Base {
     if (this.gestation) {
       clearTimeout(this.gestation)
     }
+  }
 
+  _die () {
     this.emit('death', this)
+
+    this._destroy()
   }
 
   _generatePosition (maxX, maxY) {
@@ -42,8 +48,11 @@ export default class Egg extends Base {
   }
 
   _hatch () {
-    new Creature(this)
     this.emit('hatch', this)
+
+    new Creature(this)
+
+    this._destroy()
   }
 
 
@@ -58,6 +67,8 @@ export default class Egg extends Base {
     super()
 
     this._generatePosition(maxX, maxY)
+
+    this.ui.details = document.createSVGElement('title')
 
     this.ui = {
       details: document.createSVGElement('title'),
@@ -102,7 +113,7 @@ export default class Egg extends Base {
   // Proxy `size` from the prime DNA
   // This may need adjusting
   get consumptionRate () {
-    return this.size
+    return this.size * 10
   }
 
   get dnaMap () {

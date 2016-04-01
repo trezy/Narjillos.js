@@ -1,6 +1,16 @@
+import Base from './Base'
 import Egg from './Egg'
 
-export default class Dish {
+
+
+
+
+export default class Dish extends Base {
+
+  /******************************************************************************\
+    Private Methods
+  \******************************************************************************/
+
   _bindEvents () {
     // Bind initialize to the Start button
     this.ui.start.addEventListener('click', this._initialize.bind(this))
@@ -35,13 +45,32 @@ export default class Dish {
     let maxY = this.ui.dish.scrollHeight
 
     let egg = new Egg(maxX, maxY)
+    egg.on('death', (egg) => {
+      egg.ui.group.classList.add('hide')
+    })
+    egg.on('hatch', (egg) => {
+      egg.ui.group.classList.add('hide')
+    })
 
     this.eggs.push(egg)
-
-    this.ui.dish.appendChild(egg.group)
+    this._renderEgg(egg)
   }
 
+  _renderEgg (egg) {
+    this.ui.dish.appendChild(egg.ui.group)
+  }
+
+
+
+
+
+  /******************************************************************************\
+    Public Methods
+  \******************************************************************************/
+
   constructor (options) {
+    super()
+
     // Set default options
     this.options = options || {}
 
@@ -58,4 +87,20 @@ export default class Dish {
     // Bind events for the application
     this._bindEvents()
   }
+
+
+
+
+
+  /******************************************************************************\
+    Getters
+  \******************************************************************************/
+
+
+
+
+
+  /******************************************************************************\
+    Setters
+  \******************************************************************************/
 }

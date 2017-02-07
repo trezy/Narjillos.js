@@ -40,6 +40,20 @@ export default class Base extends EventEmitter {
 
   constructor () {
     super()
+    
+    this.destroyExceptions = []
+  }
+  
+  // Delete all ui elements
+  destroy () {
+    if (this.ui) {    
+      Object.keys(this.ui).forEach(function (key) {
+        if (!this._destroyExceptions || this._destroyExceptions.indexOf(key) === -1) {
+          let element = this.ui[key]
+          element.parentNode.removeChild(element)
+        }
+      }, this)
+    }
   }
 
 
@@ -49,6 +63,16 @@ export default class Base extends EventEmitter {
   /******************************************************************************\
     Getters
   \******************************************************************************/
+
+  get destroyExceptions () {
+    if (!this._destroyExceptions && this._destroyExceptions !== undefined) {
+      Object.defineProperty(this, '_destroyExceptions', {
+        value: []
+      })
+    }
+
+    return this._destroyExceptions
+  }
 
   get ui () {
     if (!this._ui && this._ui !== undefined) {
@@ -67,6 +91,14 @@ export default class Base extends EventEmitter {
   /******************************************************************************\
     Setters
   \******************************************************************************/
+
+  set destroyExceptions (value) {
+    if (!Array.isArray(value)) {
+      throw new Error('destroyExceptions must be an array')
+    } else {
+      this._destroyExceptions = value
+    }
+  }
 
   set ui (value) {
     if (typeof value === 'object') {

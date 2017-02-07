@@ -12,8 +12,11 @@ export default class Creature extends Base {
   \******************************************************************************/
 
   _generatePhenotype () {
-    this.ui.mouth
-    console.log(this.dnaMap.length)
+    this.ui.mouth = document.createSVGElement('circle')
+    this.ui.mouth.setAttribute('fill', '#000000')
+    this.ui.mouth.setAttribute('r', 10)
+
+    this.ui.container.appendChild(this.ui.mouth)
   }
 
 
@@ -29,6 +32,10 @@ export default class Creature extends Base {
 
     this.birthDate = new Date
     this.egg = egg
+
+    this.ui = {
+      container: this.egg.ui.group
+    }
 
     this._generatePhenotype()
   }

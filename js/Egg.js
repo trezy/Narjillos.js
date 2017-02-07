@@ -48,11 +48,9 @@ export default class Egg extends Base {
   }
 
   _hatch () {
-    this.emit('hatch', this)
-
-    new Creature(this)
-
     this._destroy()
+    new Creature(this)
+    this.emit('hatch', this)
   }
 
 
@@ -68,28 +66,31 @@ export default class Egg extends Base {
 
     this._generatePosition(maxX, maxY)
 
-    this.ui.details = document.createSVGElement('title')
-
     this.ui = {
       details: document.createSVGElement('title'),
       group: document.createSVGElement('g'),
-      shape: document.createSVGElement('circle')
+      shape: document.createSVGElement('circle'),
+      tooltip: document.createElement('div')
     }
 
-    this.ui.group = document.createSVGElement('g')
     this.ui.group.classList.add('egg')
     this.ui.group.setAttribute('id', this.id)
     this.ui.group.setAttribute('transform', `translate(${this.position.x},${this.position.y})`)
 
-    this.ui.shape = document.createSVGElement('circle')
     this.ui.shape.setAttribute('fill', 'rgb(' + this.color[0] + ',' + this.color[1] + ',' + this.color[2] + ')')
     this.ui.shape.setAttribute('r', this.size)
 
-    this.ui.details = document.createSVGElement('title')
-    this.ui.details.innerHTML = this.genes.join(', ')
+    this.dnaMap.forEach(function (dna) {
+      if (this.ui.details.innerHTML !== '') {
+        this.ui.details.innerHTML += ' | '
+      }
+
+      this.ui.details.innerHTML += dna.genes.join(', ')
+    }, this)
 
     this.ui.group.appendChild(this.ui.details)
     this.ui.group.appendChild(this.ui.shape)
+    this.ui.group.appendChild(this.ui.tooltip)
 
     this.gestation = setTimeout(this._hatch.bind(this), this.gestationPeriod)
     this.consumption = setInterval(this._consume.bind(this), this.consumptionRate)

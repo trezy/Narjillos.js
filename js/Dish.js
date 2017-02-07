@@ -46,10 +46,11 @@ export default class Dish extends Base {
 
     let egg = new Egg(maxX, maxY)
     egg.on('death', (egg) => {
-      egg.ui.group.classList.add('hide')
+      egg.destroy()
     })
     egg.on('hatch', (egg) => {
-      egg.ui.group.classList.add('hide')
+      console.log(egg)
+//      egg.ui.group.classList.add('hide')
     })
 
     this.eggs.push(egg)

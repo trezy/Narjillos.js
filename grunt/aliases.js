@@ -1,7 +1,7 @@
 module.exports = {
   default: [
     'build',
-    'connect',
+    'connect:development',
     'watch'
   ],
 
@@ -16,5 +16,9 @@ module.exports = {
 
   buildCSS: [
     'sass'
+  ],
+
+  server: [
+    'connect:production'
   ]
 }
